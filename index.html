@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Let's Cook Tasks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="intro-screen" id="introScreen" aria-labelledby="introTitle">
+      <div class="intro-art" aria-hidden="true">
+        <div class="pan">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      <div class="intro-copy">
+        <p class="eyebrow">Personal task kitchen</p>
+        <h1 id="introTitle">What is your name?</h1>
+        <form id="nameForm" class="name-form">
+          <label class="sr-only" for="nameInput">Your name</label>
+          <input id="nameInput" name="name" type="text" autocomplete="name" placeholder="Type your name" required>
+          <button type="submit">Start</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="dashboard hidden" id="dashboard" aria-label="Task dashboard">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Today</p>
+          <h1 id="greeting">Come on, let's cook</h1>
+        </div>
+        <div class="clock-stack">
+          <span id="currentTime">--:--</span>
+          <button type="button" id="changeNameBtn" title="Change name" aria-label="Change name">Name</button>
+        </div>
+      </header>
+
+      <section class="hero-panel">
+        <div>
+          <p class="eyebrow">Active session</p>
+          <h2 id="activeTaskName">Pick a task to start cooking.</h2>
+          <p id="activeTaskMeta">Your timer keeps counting even when you switch tabs.</p>
+        </div>
+        <div class="timer-block">
+          <span id="sessionTimer">00:00:00</span>
+          <button type="button" id="stopTimerBtn" disabled>Stop</button>
+        </div>
+      </section>
+
+      <section class="workspace-grid">
+        <div class="task-builder">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Plan the day</p>
+              <h2>Add your tasks</h2>
+            </div>
+          </div>
+          <form id="taskForm" class="task-form">
+            <label>
+              <span>Task</span>
+              <input id="taskTitle" type="text" placeholder="Math revision, gym, project..." required>
+            </label>
+            <label>
+              <span>Start time</span>
+              <input id="taskTime" type="time" required>
+            </label>
+            <label>
+              <span>Target minutes</span>
+              <input id="taskTarget" type="number" min="5" step="5" value="30" required>
+            </label>
+            <button type="submit">Add task</button>
+          </form>
+          <div class="task-list" id="taskList" aria-live="polite"></div>
+        </div>
+
+        <aside class="stats-panel">
+          <div class="stat-card">
+            <span class="stat-label">Worked today</span>
+            <strong id="todayTotal">0m</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Current streak</span>
+            <strong id="streakCount">0 days</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Tasks done</span>
+            <strong id="doneCount">0</strong>
+          </div>
+        </aside>
+      </section>
+
+      <section class="analytics">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Progress</p>
+            <h2>Daily work graph</h2>
+          </div>
+          <span id="weekRange"></span>
+        </div>
+        <div class="chart" id="chart" aria-label="Last seven days worked time graph"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
