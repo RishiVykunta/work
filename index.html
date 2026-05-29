@@ -11,7 +11,7 @@
 </head>
 <body>
   <main class="app-shell">
-    <section class="intro-screen" id="introScreen" aria-labelledby="introTitle">
+    <section class="intro-screen" id="authScreen" aria-labelledby="authTitle">
       <div class="intro-art" aria-hidden="true">
         <div class="pan">
           <span></span>
@@ -21,11 +21,56 @@
       </div>
       <div class="intro-copy">
         <p class="eyebrow">Personal study planner</p>
-        <h1 id="introTitle">What is your name?</h1>
-        <form id="nameForm" class="name-form">
-          <label class="sr-only" for="nameInput">Your name</label>
-          <input id="nameInput" name="name" type="text" autocomplete="name" placeholder="Type your name" required>
-          <button type="submit">Start</button>
+        <h1 id="authTitle">Login to your focus space.</h1>
+        <form id="authForm" class="name-form auth-form">
+          <label>
+            <span>Username</span>
+            <input id="usernameInput" name="username" type="text" autocomplete="username" placeholder="Choose a username" required>
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="passwordInput" name="password" type="password" autocomplete="current-password" placeholder="Your password" required>
+          </label>
+          <div class="auth-actions">
+            <button type="submit" data-auth-action="login">Login</button>
+            <button type="submit" data-auth-action="register">Create account</button>
+          </div>
+        </form>
+        <p class="form-message" id="authMessage"></p>
+      </div>
+    </section>
+
+    <section class="intro-screen hidden" id="introScreen" aria-labelledby="introTitle">
+      <div class="intro-art" aria-hidden="true">
+        <div class="pan">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      <div class="intro-copy">
+        <p class="eyebrow">Setup questions</p>
+        <h1 id="introTitle">Build your study mission.</h1>
+        <form id="nameForm" class="setup-form">
+          <label>
+            <span>Your name</span>
+            <input id="nameInput" name="name" type="text" autocomplete="name" placeholder="Type your name" required>
+          </label>
+          <label>
+            <span>Your aim</span>
+            <input id="aimInput" name="aim" type="text" placeholder="GATE, semester exams, coding..." required>
+          </label>
+          <div class="setup-row">
+            <label>
+              <span>Target days</span>
+              <input id="targetDaysInput" name="targetDays" type="number" min="1" value="217" required>
+            </label>
+            <label>
+              <span>Daily target hours</span>
+              <input id="dailyHoursInput" name="dailyHours" type="number" min="1" step="0.5" value="4" required>
+            </label>
+          </div>
+          <button type="submit">Start my plan</button>
         </form>
       </div>
     </section>
@@ -35,19 +80,23 @@
         <div>
           <p class="eyebrow">Today</p>
           <h1 id="greeting">Come on, let's cook</h1>
+          <p class="aim-line" id="aimLine"></p>
         </div>
         <div class="top-actions">
           <div class="countdown-card" aria-label="Days left until January 1">
-            <span class="stat-label">Jan 1 target</span>
+            <span class="stat-label" id="targetLabel">Target</span>
             <strong><span id="daysLeft">217</span> days</strong>
             <div class="progress-track">
               <span id="goalProgress"></span>
             </div>
-            <small>Build the 217-day study streak</small>
+            <small id="streakGoalText">Build the study streak</small>
           </div>
           <div class="clock-stack">
             <span id="currentTime">--:--</span>
-            <button type="button" id="changeNameBtn" title="Change name" aria-label="Change name">Name</button>
+            <div class="account-buttons">
+              <button type="button" id="changeNameBtn" title="Edit setup" aria-label="Edit setup">Setup</button>
+              <button type="button" id="logoutBtn" title="Logout" aria-label="Logout">Logout</button>
+            </div>
           </div>
         </div>
       </header>
@@ -139,6 +188,10 @@
           <div class="stat-card">
             <span class="stat-label">Tasks done</span>
             <strong id="doneCount">0</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Daily goal</span>
+            <strong id="dailyGoal">4h</strong>
           </div>
         </aside>
       </section>

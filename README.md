@@ -7,6 +7,8 @@ Live website: https://work-six-beryl.vercel.app/
 ## Features
 
 - Name-based welcome screen with a personal greeting
+- Local login/register flow so multiple people can use their own profile in the same browser
+- Setup questions for name, aim, target days, and daily study target
 - Daily study task planner with start time and target minutes
 - Focus timer that keeps counting even when switching tabs
 - Sticky mini timer with time left and `+5` / `-5` minute controls
@@ -21,7 +23,7 @@ Live website: https://work-six-beryl.vercel.app/
 
 Open `index.html` directly in a browser.
 
-No backend, install step, or account is required. The website saves data in the browser using local storage.
+No backend or install step is required. The website saves login profiles and study data in the browser using local storage.
 
 ## Files
 

@@ -1,27 +1,48 @@
-const STORAGE_KEY = "letsCookTasks:v1";
-const GOAL_DATE = new Date("2027-01-01T00:00:00+05:30");
-const PREP_START_DATE = new Date("2026-05-29T00:00:00+05:30");
+const STORAGE_PREFIX = "letsCookTasks:user:";
+const USERS_KEY = "letsCookTasks:users:v1";
+const CURRENT_USER_KEY = "letsCookTasks:currentUser";
+const DEFAULT_TARGET_DAYS = 217;
+const DEFAULT_DAILY_HOURS = 4;
 
 const defaultState = {
   name: "",
+  aim: "",
+  targetDays: DEFAULT_TARGET_DAYS,
+  dailyHours: DEFAULT_DAILY_HOURS,
+  prepStartDate: "",
+  goalDate: "",
+  setupComplete: false,
   tasks: [],
   sessions: [],
   activeSession: null
 };
 
+let currentUser = localStorage.getItem(CURRENT_USER_KEY) || "";
 let state = loadState();
 let editingName = false;
 
 const els = {
+  authScreen: document.querySelector("#authScreen"),
+  authForm: document.querySelector("#authForm"),
+  usernameInput: document.querySelector("#usernameInput"),
+  passwordInput: document.querySelector("#passwordInput"),
+  authMessage: document.querySelector("#authMessage"),
   introScreen: document.querySelector("#introScreen"),
   dashboard: document.querySelector("#dashboard"),
   nameForm: document.querySelector("#nameForm"),
   nameInput: document.querySelector("#nameInput"),
+  aimInput: document.querySelector("#aimInput"),
+  targetDaysInput: document.querySelector("#targetDaysInput"),
+  dailyHoursInput: document.querySelector("#dailyHoursInput"),
   greeting: document.querySelector("#greeting"),
+  aimLine: document.querySelector("#aimLine"),
   currentTime: document.querySelector("#currentTime"),
   daysLeft: document.querySelector("#daysLeft"),
   goalProgress: document.querySelector("#goalProgress"),
+  targetLabel: document.querySelector("#targetLabel"),
+  streakGoalText: document.querySelector("#streakGoalText"),
   changeNameBtn: document.querySelector("#changeNameBtn"),
+  logoutBtn: document.querySelector("#logoutBtn"),
   taskForm: document.querySelector("#taskForm"),
   taskTitle: document.querySelector("#taskTitle"),
   taskTime: document.querySelector("#taskTime"),
@@ -47,6 +68,7 @@ const els = {
   streakCount: document.querySelector("#streakCount"),
   bestStreakCount: document.querySelector("#bestStreakCount"),
   doneCount: document.querySelector("#doneCount"),
+  dailyGoal: document.querySelector("#dailyGoal"),
   yAxis: document.querySelector("#yAxis"),
   chart: document.querySelector("#chart"),
   xAxis: document.querySelector("#xAxis"),
@@ -54,15 +76,34 @@ const els = {
 };
 
 function loadState() {
+  if (!currentUser) return { ...defaultState };
+
   try {
-    return { ...defaultState, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
+    return { ...defaultState, ...JSON.parse(localStorage.getItem(userStorageKey(currentUser))) };
   } catch {
     return { ...defaultState };
   }
 }
 
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (!currentUser) return;
+  localStorage.setItem(userStorageKey(currentUser), JSON.stringify(state));
+}
+
+function userStorageKey(username) {
+  return `${STORAGE_PREFIX}${username.toLowerCase()}`;
+}
+
+function loadUsers() {
+  try {
+    return JSON.parse(localStorage.getItem(USERS_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveUsers(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
 function formatDateKey(date = new Date()) {
@@ -109,26 +150,50 @@ function titleCaseName(name) {
   return name.trim().replace(/\s+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function showDashboard() {
+function hideAllScreens() {
+  els.authScreen.classList.add("hidden");
   els.introScreen.classList.add("hidden");
+  els.dashboard.classList.add("hidden");
+}
+
+function showAuth(message = "") {
+  hideAllScreens();
+  els.authScreen.classList.remove("hidden");
+  els.authMessage.textContent = message;
+}
+
+function showDashboard() {
+  hideAllScreens();
   els.dashboard.classList.remove("hidden");
 }
 
 function showIntro(prefill = false) {
-  els.dashboard.classList.add("hidden");
+  hideAllScreens();
   els.introScreen.classList.remove("hidden");
-  if (prefill) els.nameInput.value = state.name;
+  if (prefill) {
+    els.nameInput.value = state.name;
+    els.aimInput.value = state.aim;
+    els.targetDaysInput.value = state.targetDays || DEFAULT_TARGET_DAYS;
+    els.dailyHoursInput.value = state.dailyHours || DEFAULT_DAILY_HOURS;
+  }
   els.nameInput.focus();
 }
 
 function render() {
-  if (!state.name || editingName) {
-    showIntro();
+  if (!currentUser) {
+    if (els.authScreen.classList.contains("hidden")) showAuth();
+    return;
+  }
+
+  if (!state.setupComplete || editingName) {
+    if (els.introScreen.classList.contains("hidden")) showIntro(true);
+    return;
   } else {
     showDashboard();
   }
 
   els.greeting.textContent = `Come on, let's cook ${state.name}`;
+  els.aimLine.textContent = state.aim ? `Aim: ${state.aim}` : "";
   els.currentTime.textContent = formatClock();
   renderCountdown();
   renderActiveSession();
@@ -139,13 +204,17 @@ function render() {
 
 function renderCountdown() {
   const now = new Date();
-  const msLeft = GOAL_DATE.getTime() - now.getTime();
+  const goalDate = getGoalDate();
+  const prepStartDate = getPrepStartDate();
+  const msLeft = goalDate.getTime() - now.getTime();
   const daysLeft = Math.max(0, Math.ceil(msLeft / 86400000));
-  const totalPrepMs = GOAL_DATE.getTime() - PREP_START_DATE.getTime();
-  const elapsedPrepMs = now.getTime() - PREP_START_DATE.getTime();
+  const totalPrepMs = Math.max(1, goalDate.getTime() - prepStartDate.getTime());
+  const elapsedPrepMs = now.getTime() - prepStartDate.getTime();
   const progress = Math.min(100, Math.max(0, (elapsedPrepMs / totalPrepMs) * 100));
   els.daysLeft.textContent = daysLeft;
   els.goalProgress.style.width = `${progress}%`;
+  els.targetLabel.textContent = `${state.targetDays || DEFAULT_TARGET_DAYS}-day target`;
+  els.streakGoalText.textContent = `Build the ${state.targetDays || DEFAULT_TARGET_DAYS}-day study streak`;
 }
 
 function renderActiveSession() {
@@ -191,7 +260,8 @@ function renderActiveSession() {
 
 function showCompletionMessage(task, targetMinutes) {
   const taskName = task ? task.title : "your study task";
-  els.completionMessage.textContent = `Excellent work. You finished ${targetMinutes} focused minutes for "${taskName}". That is one more honest step toward January 1.`;
+  const aimText = state.aim ? state.aim : "your goal";
+  els.completionMessage.textContent = `Excellent work. You finished ${targetMinutes} focused minutes for "${taskName}". That is one more honest step toward ${aimText}.`;
   els.completionModal.classList.remove("hidden");
 }
 
@@ -237,6 +307,7 @@ function renderStats() {
   els.streakCount.textContent = `${calculateStreak()} days`;
   els.bestStreakCount.textContent = `${calculateBestStreak()} days`;
   els.doneCount.textContent = doneToday;
+  els.dailyGoal.textContent = `${Number(state.dailyHours || DEFAULT_DAILY_HOURS)}h`;
 }
 
 function renderChart() {
@@ -291,9 +362,10 @@ function lastSevenDays() {
 }
 
 function preparationDays() {
-  const start = new Date(PREP_START_DATE);
+  const start = getPrepStartDate();
   const today = new Date();
-  const end = today < GOAL_DATE ? today : GOAL_DATE;
+  const goalDate = getGoalDate();
+  const end = today < goalDate ? today : goalDate;
   start.setHours(0, 0, 0, 0);
   end.setHours(0, 0, 0, 0);
   const dayCount = Math.max(1, Math.floor((end - start) / 86400000) + 1);
@@ -307,6 +379,19 @@ function preparationDays() {
       label: `Day ${index + 1} - ${date.toLocaleDateString([], { month: "short", day: "numeric" })}`
     };
   });
+}
+
+function getPrepStartDate() {
+  const start = state.prepStartDate ? new Date(state.prepStartDate) : new Date();
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
+function getGoalDate() {
+  if (state.goalDate) return new Date(state.goalDate);
+  const fallback = getPrepStartDate();
+  fallback.setDate(fallback.getDate() + Number(state.targetDays || DEFAULT_TARGET_DAYS));
+  return fallback;
 }
 
 function calculateStreak() {
@@ -409,6 +494,18 @@ function escapeHtml(value) {
 els.nameForm.addEventListener("submit", (event) => {
   event.preventDefault();
   state.name = titleCaseName(els.nameInput.value);
+  state.aim = els.aimInput.value.trim();
+  state.targetDays = Math.max(1, Number(els.targetDaysInput.value || DEFAULT_TARGET_DAYS));
+  state.dailyHours = Math.max(1, Number(els.dailyHoursInput.value || DEFAULT_DAILY_HOURS));
+  if (!state.prepStartDate || !state.setupComplete) {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    state.prepStartDate = start.toISOString();
+  }
+  const goal = getPrepStartDate();
+  goal.setDate(goal.getDate() + state.targetDays);
+  state.goalDate = goal.toISOString();
+  state.setupComplete = true;
   editingName = false;
   saveState();
   render();
@@ -417,6 +514,48 @@ els.nameForm.addEventListener("submit", (event) => {
 els.changeNameBtn.addEventListener("click", () => {
   editingName = true;
   showIntro(true);
+});
+
+els.logoutBtn.addEventListener("click", () => {
+  if (state.activeSession) stopActiveSession();
+  currentUser = "";
+  localStorage.removeItem(CURRENT_USER_KEY);
+  state = { ...defaultState };
+  editingName = false;
+  showAuth("Logged out. Login again to continue.");
+});
+
+els.authForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const submitter = event.submitter;
+  const action = submitter?.dataset.authAction || "login";
+  const username = els.usernameInput.value.trim().toLowerCase();
+  const password = els.passwordInput.value;
+  const users = loadUsers();
+
+  if (!username || !password) {
+    showAuth("Enter a username and password.");
+    return;
+  }
+
+  if (action === "register") {
+    if (users[username]) {
+      showAuth("That username already exists. Login instead.");
+      return;
+    }
+    users[username] = { password };
+    saveUsers(users);
+  } else if (!users[username] || users[username].password !== password) {
+    showAuth("Username or password is wrong.");
+    return;
+  }
+
+  currentUser = username;
+  localStorage.setItem(CURRENT_USER_KEY, currentUser);
+  state = loadState();
+  editingName = false;
+  els.passwordInput.value = "";
+  render();
 });
 
 els.taskForm.addEventListener("submit", (event) => {

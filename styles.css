@@ -190,7 +190,8 @@ button {
 }
 
 .name-form,
-.task-form {
+.task-form,
+.setup-form {
   display: grid;
   gap: 12px;
 }
@@ -199,6 +200,49 @@ button {
   margin-top: 28px;
   grid-template-columns: minmax(0, 1fr) auto;
   max-width: 560px;
+}
+
+.auth-form,
+.setup-form {
+  margin-top: 28px;
+  max-width: 620px;
+  grid-template-columns: 1fr;
+}
+
+.auth-form label,
+.setup-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.auth-actions,
+.setup-row,
+.account-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-actions button {
+  flex: 1;
+}
+
+.setup-row label {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-message,
+.aim-line {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.form-message {
+  min-height: 1.4rem;
+  margin: 12px 0 0;
 }
 
 input {
@@ -349,6 +393,13 @@ button:disabled {
   background: var(--soft);
   color: var(--ink);
   border: 1px solid var(--line);
+}
+
+#logoutBtn {
+  min-height: 38px;
+  background: rgba(127, 29, 29, 0.28);
+  color: #fecdd3;
+  border: 1px solid rgba(251, 113, 133, 0.4);
 }
 
 .mini-timer {
@@ -984,6 +1035,12 @@ button:disabled {
   .top-actions {
     display: grid;
     justify-content: stretch;
+  }
+
+  .auth-actions,
+  .setup-row,
+  .account-buttons {
+    display: grid;
   }
 
   .countdown-card {
