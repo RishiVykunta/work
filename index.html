@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Let's Cook Tasks</title>
+  <title>Study Focus Tasks</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
         </div>
       </div>
       <div class="intro-copy">
-        <p class="eyebrow">Personal task kitchen</p>
+        <p class="eyebrow">Personal study planner</p>
         <h1 id="introTitle">What is your name?</h1>
         <form id="nameForm" class="name-form">
           <label class="sr-only" for="nameInput">Your name</label>
@@ -36,36 +36,79 @@
           <p class="eyebrow">Today</p>
           <h1 id="greeting">Come on, let's cook</h1>
         </div>
-        <div class="clock-stack">
-          <span id="currentTime">--:--</span>
-          <button type="button" id="changeNameBtn" title="Change name" aria-label="Change name">Name</button>
+        <div class="top-actions">
+          <div class="countdown-card" aria-label="Days left until January 1">
+            <span class="stat-label">Jan 1 target</span>
+            <strong><span id="daysLeft">217</span> days</strong>
+            <div class="progress-track">
+              <span id="goalProgress"></span>
+            </div>
+            <small>Build the 217-day study streak</small>
+          </div>
+          <div class="clock-stack">
+            <span id="currentTime">--:--</span>
+            <button type="button" id="changeNameBtn" title="Change name" aria-label="Change name">Name</button>
+          </div>
         </div>
       </header>
 
+      <section class="mini-timer hidden" id="miniTimer" aria-label="Active study timer">
+        <div class="mini-task">
+          <span class="mini-label">Time left</span>
+          <strong id="miniTimeLeft">00:00</strong>
+          <small id="miniTaskName">No active task</small>
+        </div>
+        <div class="mini-progress" aria-hidden="true">
+          <span id="miniProgressFill"></span>
+        </div>
+        <div class="mini-controls">
+          <button type="button" id="minusFiveBtn" title="Reduce time by 5 minutes" aria-label="Reduce time by 5 minutes">-5</button>
+          <span id="activeTargetMinutes">30m</span>
+          <button type="button" id="plusFiveBtn" title="Add 5 minutes" aria-label="Add 5 minutes">+5</button>
+        </div>
+      </section>
+
       <section class="hero-panel">
         <div>
-          <p class="eyebrow">Active session</p>
+          <p class="eyebrow">Focus session</p>
           <h2 id="activeTaskName">Pick a task to start cooking.</h2>
           <p id="activeTaskMeta">Your timer keeps counting even when you switch tabs.</p>
         </div>
         <div class="timer-block">
+          <span class="timer-label">Studied</span>
           <span id="sessionTimer">00:00:00</span>
+          <span class="timer-left" id="sessionTimeLeft">Time left 00:00</span>
           <button type="button" id="stopTimerBtn" disabled>Stop</button>
         </div>
+      </section>
+
+      <section class="motivation-wall" aria-label="Motivational study images">
+        <article class="motivation-card goal-card">
+          <span>Goal</span>
+          <strong>Jan 1 is waiting.</strong>
+        </article>
+        <article class="motivation-card focus-card">
+          <span>Focus</span>
+          <strong>Win one block now.</strong>
+        </article>
+        <article class="motivation-card success-card">
+          <span>Success</span>
+          <strong>Your streak becomes proof.</strong>
+        </article>
       </section>
 
       <section class="workspace-grid">
         <div class="task-builder">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">Plan the day</p>
-              <h2>Add your tasks</h2>
+              <p class="eyebrow">Study plan</p>
+              <h2>Add your study tasks</h2>
             </div>
           </div>
           <form id="taskForm" class="task-form">
             <label>
               <span>Task</span>
-              <input id="taskTitle" type="text" placeholder="Math revision, gym, project..." required>
+              <input id="taskTitle" type="text" placeholder="Math revision, physics notes, coding practice..." required>
             </label>
             <label>
               <span>Start time</span>
@@ -86,8 +129,12 @@
             <strong id="todayTotal">0m</strong>
           </div>
           <div class="stat-card">
-            <span class="stat-label">Current streak</span>
+            <span class="stat-label">Study streak</span>
             <strong id="streakCount">0 days</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Best streak</span>
+            <strong id="bestStreakCount">0 days</strong>
           </div>
           <div class="stat-card">
             <span class="stat-label">Tasks done</span>
@@ -100,13 +147,36 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Progress</p>
-            <h2>Daily work graph</h2>
+            <h2>Study hours graph</h2>
           </div>
           <span id="weekRange"></span>
         </div>
-        <div class="chart" id="chart" aria-label="Last seven days worked time graph"></div>
+        <div class="axis-caption">
+          <span>Y axis: hours studied</span>
+          <span>X axis: preparation days</span>
+        </div>
+        <div class="chart-shell" aria-label="Study hours by preparation day">
+          <div class="y-axis" id="yAxis"></div>
+          <div class="chart-scroll">
+            <div class="chart" id="chart"></div>
+            <div class="x-axis" id="xAxis"></div>
+          </div>
+        </div>
       </section>
     </section>
+
+    <div class="completion-modal hidden" id="completionModal" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
+      <div class="completion-box">
+        <div class="completion-image" aria-hidden="true"></div>
+        <p class="eyebrow">Session complete</p>
+        <h2 id="completionTitle">Brilliant focus!</h2>
+        <p id="completionMessage">You completed this study block. Take a breath, then choose your next move.</p>
+        <div class="completion-actions">
+          <button type="button" id="finishSessionBtn">Finish session</button>
+          <button type="button" id="continueSessionBtn">Keep studying</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script src="app.js"></script>
